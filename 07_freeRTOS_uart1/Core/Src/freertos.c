@@ -26,7 +26,7 @@
 
 
 #define BUFFER_SIZE 1
-
+#define DMA_CPLT_INT  0xA1
 uint32_t *buffer1=NULL;
 uint32_t *buffer2=NULL;
 /* Private includes ----------------------------------------------------------*/
@@ -38,7 +38,7 @@ uint32_t *buffer2=NULL;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+ QueueHandle_t xQueue1 =NULL;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -140,6 +140,13 @@ void StartDefaultTask(void *argument)
 	memset(buffer2,0xff,(sizeof(uint32_t)*BUFFER_SIZE));
 	printf("Unit TEST ADC+DMA\r\n");
 	
+	xQueue1= xQueueCreate( 10, 4);//总长和每个单位长度 创建要在传输到DMA之前不然 传完在创建
+	//队列里就没有数据
+	if(NULL==xQueue1)
+	{
+		printf("Queue create failed \r\n");
+		return;
+	}
 	HAL_StatusTypeDef ret = HAL_OK;
 	
 	ret=HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
@@ -149,32 +156,18 @@ void StartDefaultTask(void *argument)
 		printf("HAL_ADC call  failed \r\n");
 	}
 	//queue test
-	 QueueHandle_t xQueue1 =NULL;
-	 xQueue1= xQueueCreate( 10, 4);//总长和每个单位长度 创建
-	if(NULL==xQueue1)
-	{
-		printf("Queue create failed \r\n");
-		return;
-	}
 	
-	uint32_t queue_data_1=123;
+	 
 	
 	BaseType_t ret_1=pdPASS;
-	
-	ret_1=xQueueSend( xQueue1,&queue_data_1, 0 ); //发送
-	
-	printf("send=%ld \r\n",ret_1);
-	
-	ret_1=pdPASS;	
-	
-	
+		
 	uint32_t queue_data_2 =0xff;
 	
 	ret_1=xQueueReceive(xQueue1,&queue_data_2, 0 );//接收
 	
-	printf("receive=%ld \r\n",ret_1);
+	printf("receive_ret_1=%ld \r\n",ret_1);
 	
-	printf("queue_data_2=%d \r\n",queue_data_2);
+	printf("receive=%d \r\n",queue_data_2);
 	
 	
 	
@@ -200,7 +193,24 @@ __weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)//这里是创建DMA回调
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_ADC_ConvCpltCallback could be implemented in the user file
    */
-	printf("buffer data =%d\r\n",buffer1[0]);
+		printf("buffer1 data =%d\r\n",buffer1[0]);
+	
+	BaseType_t xHigherPriorityTaskWoken;
+	xHigherPriorityTaskWoken = pdFALSE;
+	
+	uint32_t dma_pattern_cplt=DMA_CPLT_INT;
+	
+	BaseType_t ret_1=pdPASS;
+	
+	ret_1= xQueueSendFromISR( xQueue1, &dma_pattern_cplt,&xHigherPriorityTaskWoken );
+		if( xHigherPriorityTaskWoken )
+	{
+		// Actual macro used here is port specific.
+		taskYIELD ();
+	}
+	printf("send_ret_1=%ld \r\n",ret_1);
+
+	
 }
 __weak void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
