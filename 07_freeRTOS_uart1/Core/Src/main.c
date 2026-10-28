@@ -23,7 +23,10 @@
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
+#include <stdlib.h>
 
+
+#define BUFFER_SIZE 1
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 

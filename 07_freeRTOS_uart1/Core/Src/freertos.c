@@ -22,7 +22,13 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
+#include <stdlib.h>
 
+
+#define BUFFER_SIZE 1
+
+uint32_t *buffer1=NULL;
+uint32_t *buffer2=NULL;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -45,7 +51,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+extern ADC_HandleTypeDef hadc1;
+extern DMA_HandleTypeDef hdma_adc1;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -115,9 +122,37 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+	buffer1 =(uint32_t*)malloc(sizeof(uint32_t)*BUFFER_SIZE);
+	buffer2 =(uint32_t*)malloc(sizeof(uint32_t)*BUFFER_SIZE);
+	if(buffer1==NULL)
+	{
+		printf("buffer1 malloc failed\r\n");
+		return;
+	}
+		if(buffer2==NULL)
+	{
+		printf("buffer2 malloc failed\r\n");
+		return;
+	}
+	memset(buffer1,0xff,(sizeof(uint32_t)*BUFFER_SIZE));
+	memset(buffer2,0xff,(sizeof(uint32_t)*BUFFER_SIZE));
+	printf("Unit TEST ADC+DMA\r\n");
+	
+	HAL_StatusTypeDef ret = HAL_OK;
+	
+	ret=HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
+	
+	if(HAL_OK!=ret)
+	{
+		printf("HAL_ADC call  failed\r\n");
+	}
+	
+	
   for(;;)
   {
     printf("hello world \r\n");
+		
+		printf("buffer data =%d\r\n",buffer1[0]);
     osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
@@ -128,3 +163,21 @@ void StartDefaultTask(void *argument)
 
 /* USER CODE END Application */
 
+__weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)//这里是创建DMA回调函数进行中断打印
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hadc);
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_ADC_ConvCpltCallback could be implemented in the user file
+   */
+	printf("buffer data =%d\r\n",buffer1[0]);
+}
+__weak void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hadc);
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_ADC_ErrorCallback could be implemented in the user file
+   */
+	printf("ADC transfer error \r\n");
+}
