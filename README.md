@@ -17,7 +17,7 @@
 | [stage-02-adc-dma](https://github.com/zhanggongzi4/lixinproject/tree/stage-02-adc-dma) | 第一个任务申请 buffer，启动 ADC DMA 传输，并添加完成及错误回调；用户已在开发板验证 DMA 传输和进入中断。 |
 | [stage-03-queue-test](https://github.com/zhanggongzi4/lixinproject/tree/stage-03-queue-test) | 新增 FreeRTOS 队列创建、发送和接收测试：在同一个任务中发送数值 `123`，再接收并打印返回值及数据。 |
 | [stage-04-queue-from-isr](https://github.com/zhanggongzi4/lixinproject/tree/stage-04-queue-from-isr) | 在中断中发送队列：ADC DMA 完成回调通过 `xQueueSendFromISR()` 发送完成标记 `0xA1`，任务尝试接收。 |
-| [stage-05-two-buffer-loop](https://github.com/zhanggongzi4/lixinproject/tree/stage-05-two-buffer-loop) | 两个 buffer 循环存入数据阶段：任务循环阻塞接收 DMA 完成消息，通过 `DMA_point` 切换下一次 DMA 写入的 buffer。保存当前学习代码，具体边界见下方说明。 |
+| [stage-05-two-buffer-loop](https://github.com/zhanggongzi4/lixinproject/tree/stage-05-two-buffer-loop) | buffer1 和 buffer2 循环写入：任务循环阻塞接收 DMA 完成消息，通过 `DMA_point` 切换下一次 DMA 写入的 buffer。保存当前学习代码，具体边界见下方说明。 |
 
 本次直接从初始化阶段保存到 DMA 传输及中断阶段，未单独保存仅完成 buffer 申请的版本，因此没有 `stage-01-buffer` 标签。
 
@@ -35,7 +35,7 @@
 - 用户文件中的两个回调当前仍带 `__weak`，与 HAL 默认弱实现并存，建议后续改为普通函数以明确覆盖默认回调。
 - 本阶段保留学习代码现状，已改为循环阻塞接收；中断内打印、用户弱回调及任务失败分支直接 `return` 等审查问题尚未修复。
 
-各标签保存对应阶段的学习代码。当前两个 buffer 循环存入数据阶段仅进行源码检查，本次归档未重新编译或进行硬件测试。
+各标签保存对应阶段的学习代码。当前 buffer1 和 buffer2 循环写入阶段仅进行源码检查，本次归档未重新编译或进行硬件测试。
 
 ## 打开工程
 
