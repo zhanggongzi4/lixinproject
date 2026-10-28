@@ -1,0 +1,20 @@
+# Keil build output and per-user settings
+07_freeRTOS_uart1/MDK-ARM/07_freeRTOS_uart1/
+*.o
+*.d
+*.crf
+*.axf
+*.hex
+*.bin
+*.map
+*.lst
+*.lnp
+*.dep
+*.build_log.htm
+*.uvguix.*
+
+# Local editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
