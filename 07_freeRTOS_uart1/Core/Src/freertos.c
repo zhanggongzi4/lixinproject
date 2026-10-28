@@ -27,8 +27,7 @@
 
 #define BUFFER_SIZE 1
 #define DMA_CPLT_INT  0xA1
-uint32_t *buffer1=NULL;
-uint32_t *buffer2=NULL;
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
@@ -38,7 +37,11 @@ uint32_t *buffer2=NULL;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+uint32_t *buffer1=NULL;
+uint32_t *buffer2=NULL;
  QueueHandle_t xQueue1 =NULL;
+
+uint32_t DMA_point=0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -124,6 +127,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+	DMA_point = 0;
 	buffer1 =(uint32_t*)malloc(sizeof(uint32_t)*BUFFER_SIZE);
 	buffer2 =(uint32_t*)malloc(sizeof(uint32_t)*BUFFER_SIZE);
 	if(buffer1==NULL)
@@ -140,7 +144,7 @@ void StartDefaultTask(void *argument)
 	memset(buffer2,0xff,(sizeof(uint32_t)*BUFFER_SIZE));
 	printf("Unit TEST ADC+DMA\r\n");
 	
-	xQueue1= xQueueCreate( 10, 4);//总长和每个单位长度 创建要在传输到DMA之前不然 传完在创建
+	xQueue1= xQueueCreate( 10, 4);//总长和每个单位长度 创建要在传输到DMA之前不然 传完再创建
 	//队列里就没有数据
 	if(NULL==xQueue1)
 	{
@@ -157,26 +161,35 @@ void StartDefaultTask(void *argument)
 	}
 	//queue test
 	
-	 
 	
 	BaseType_t ret_1=pdPASS;
 		
 	uint32_t queue_data_2 =0xff;
-	
-	ret_1=xQueueReceive(xQueue1,&queue_data_2, 0 );//接收
-	
-	printf("receive_ret_1=%ld \r\n",ret_1);
-	
-	printf("receive=%d \r\n",queue_data_2);
 	
 	
 	
   for(;;)
   {
     printf("hello world \r\n");
+		ret_1=xQueueReceive(xQueue1,&queue_data_2,portMAX_DELAY);//接收
 		
-		printf("buffer data =%d\r\n",buffer1[0]);
-    osDelay(1000);
+	  printf("receive_ret_1=%ld \r\n",ret_1);
+	
+	  printf("receive=%d \r\n",queue_data_2);
+  
+	  if(0==DMA_point)	
+		{
+			printf("buffer1 data =%d",buffer1[0]);
+			HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
+			DMA_point=1;
+		}else
+		{
+			printf("buffer2 data =%d",buffer2[0]);
+			HAL_ADC_Start_DMA(&hadc1,buffer2,BUFFER_SIZE);
+			DMA_point=0;
+		}
+	
+	
   }
   /* USER CODE END StartDefaultTask */
 }
