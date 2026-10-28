@@ -15,18 +15,21 @@
 | --- | --- |
 | [stage-00-adc-dma-init](https://github.com/zhanggongzi4/lixinproject/tree/stage-00-adc-dma-init) | ADC1、DMA2 Stream0、USART1 初始化；默认任务打印 `hello world`，尚未申请 buffer 或启动 ADC DMA。 |
 | [stage-02-adc-dma](https://github.com/zhanggongzi4/lixinproject/tree/stage-02-adc-dma) | 第一个任务申请 buffer，启动 ADC DMA 传输，并添加完成及错误回调；用户已在开发板验证 DMA 传输和进入中断。 |
+| [stage-03-queue-test](https://github.com/zhanggongzi4/lixinproject/tree/stage-03-queue-test) | 新增 FreeRTOS 队列创建、发送和接收测试：在同一个任务中发送数值 `123`，再接收并打印返回值及数据。 |
 
 本次直接从初始化阶段保存到 DMA 传输及中断阶段，未单独保存仅完成 buffer 申请的版本，因此没有 `stage-01-buffer` 标签。
 
 ## 当前代码状态
 
+- `StartDefaultTask()` 使用 `xQueueCreate(10, 4)` 创建容量为 10、每项 4 字节的队列，使用 `xQueueSend()` 和 `xQueueReceive()` 以零等待时间测试一次发送与接收。
+- 队列测试成功时，预期打印 `send=1`、`receive=1`、`queue_data_2=123`；这是同一任务内的队列接口测试，尚未连接 ADC DMA 回调或用于任务间传递数据。
 - `StartDefaultTask()` 使用 `malloc()` 申请 `buffer1`、`buffer2`，每个 buffer 包含一个 `uint32_t` 元素。
 - 调用 `HAL_ADC_Start_DMA(&hadc1, buffer1, BUFFER_SIZE)`，当前仅使用 `buffer1` 接收数据，尚未实现双缓冲切换。
 - ADC 为单次转换、DMA 为 Normal 模式，任务启动时调用一次采集；循环打印 buffer 不表示持续重新采样。
 - 完成回调和错误回调中保留当前调试用 `printf()`；后续可改为中断通知任务，由任务处理和打印。
 - 用户文件中的两个回调当前仍带 `__weak`，与 HAL 默认弱实现并存，建议后续改为普通函数以明确覆盖默认回调。
 
-本标签保存当前学习代码及用户反馈的板上结果，本次归档未重新编译或进行硬件测试。
+各标签保存对应阶段的学习代码。当前队列测试阶段仅进行源码检查，本次归档未重新编译或进行硬件测试。
 
 ## 打开工程
 

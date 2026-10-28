@@ -31,6 +31,8 @@ uint32_t *buffer1=NULL;
 uint32_t *buffer2=NULL;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdlib.h>
+#include "queue.h"
 
 /* USER CODE END Includes */
 
@@ -126,12 +128,12 @@ void StartDefaultTask(void *argument)
 	buffer2 =(uint32_t*)malloc(sizeof(uint32_t)*BUFFER_SIZE);
 	if(buffer1==NULL)
 	{
-		printf("buffer1 malloc failed\r\n");
+		printf("buffer1 malloc failed \r\n");
 		return;
 	}
 		if(buffer2==NULL)
 	{
-		printf("buffer2 malloc failed\r\n");
+		printf("buffer2 malloc failed \r\n");
 		return;
 	}
 	memset(buffer1,0xff,(sizeof(uint32_t)*BUFFER_SIZE));
@@ -144,8 +146,36 @@ void StartDefaultTask(void *argument)
 	
 	if(HAL_OK!=ret)
 	{
-		printf("HAL_ADC call  failed\r\n");
+		printf("HAL_ADC call  failed \r\n");
 	}
+	//queue test
+	 QueueHandle_t xQueue1 =NULL;
+	 xQueue1= xQueueCreate( 10, 4);//总长和每个单位长度 创建
+	if(NULL==xQueue1)
+	{
+		printf("Queue create failed \r\n");
+		return;
+	}
+	
+	uint32_t queue_data_1=123;
+	
+	BaseType_t ret_1=pdPASS;
+	
+	ret_1=xQueueSend( xQueue1,&queue_data_1, 0 ); //发送
+	
+	printf("send=%ld \r\n",ret_1);
+	
+	ret_1=pdPASS;	
+	
+	
+	uint32_t queue_data_2 =0xff;
+	
+	ret_1=xQueueReceive(xQueue1,&queue_data_2, 0 );//接收
+	
+	printf("receive=%ld \r\n",ret_1);
+	
+	printf("queue_data_2=%d \r\n",queue_data_2);
+	
 	
 	
   for(;;)
