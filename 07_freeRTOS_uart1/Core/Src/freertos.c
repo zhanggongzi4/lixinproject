@@ -25,21 +25,26 @@
 #include <stdlib.h>
 
 
-#define BUFFER_SIZE 1
-#define DMA_CPLT_INT  0xA1
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
+#include <string.h>
 #include "queue.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+#define BUFFER_SIZE 1
+#define DMA_CPLT_INT  0xA1
+#define BUFFER1_READY 0X01
+#define BUFFER2_READY 0X02
 /* USER CODE BEGIN PTD */
 uint32_t *buffer1=NULL;
 uint32_t *buffer2=NULL;
- QueueHandle_t xQueue1 =NULL;
+QueueHandle_t xQueue1 =NULL;
+QueueHandle_t xQueue2 =NULL;
 
 uint32_t DMA_point=0;
 /* USER CODE END PTD */
@@ -61,19 +66,24 @@ extern DMA_HandleTypeDef hdma_adc1;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
+osThreadId_t adc_ouputTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-
+const osThreadAttr_t adc_outputTask_attributes = {
+  .name = "adc_outputTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
-
+void ADCTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -99,12 +109,17 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
+  xQueue2 = xQueueCreate(10, sizeof(uint32_t));
+  if (xQueue2 == NULL)
+  {
+    Error_Handler();
+  }
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+	adc_ouputTaskHandle = osThreadNew(ADCTask, NULL, &adc_outputTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -148,9 +163,10 @@ void StartDefaultTask(void *argument)
 	//队列里就没有数据
 	if(NULL==xQueue1)
 	{
-		printf("Queue create failed \r\n");
+		printf("Queue1 create failed \r\n");
 		return;
 	}
+
 	HAL_StatusTypeDef ret = HAL_OK;
 	
 	ret=HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
@@ -160,12 +176,11 @@ void StartDefaultTask(void *argument)
 		printf("HAL_ADC call  failed \r\n");
 	}
 	//queue test
-	
-	
+
 	BaseType_t ret_1=pdPASS;
 		
 	uint32_t queue_data_2 =0xff;
-	
+	uint32_t queue2_pattern =BUFFER1_READY;
 	
 	
   for(;;)
@@ -179,53 +194,74 @@ void StartDefaultTask(void *argument)
   
 	  if(0==DMA_point)	
 		{
-			printf("buffer1 data =%d",buffer1[0]);
-			HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
+
+			queue2_pattern=BUFFER1_READY;
+			ret_1=xQueueSend(xQueue2,&queue2_pattern,portMAX_DELAY);
+			 printf("queue send to queue2 e=%ld \r\n",ret_1);
+
+			HAL_ADC_Start_DMA(&hadc1,buffer2,BUFFER_SIZE);//这里是写完buffer1 再写buffer2
 			DMA_point=1;
 		}else
 		{
-			printf("buffer2 data =%d",buffer2[0]);
-			HAL_ADC_Start_DMA(&hadc1,buffer2,BUFFER_SIZE);
 			DMA_point=0;
+			queue2_pattern=BUFFER2_READY;
+			ret_1=xQueueSend(xQueue2,&queue2_pattern,portMAX_DELAY);
+			printf("queue send to queue2 e=%ld \r\n",ret_1);
+
+			HAL_ADC_Start_DMA(&hadc1,buffer1,BUFFER_SIZE);
+
 		}
 	
 	
   }
   /* USER CODE END StartDefaultTask */
 }
+void ADCTask(void *argument)//解包线程
+{
+	printf("output thread \r\n");
+	BaseType_t ret=pdPASS;
+	uint32_t queue2_receive= BUFFER1_READY;
 
+  for(;;)
+  {
+
+   ret=xQueueReceive(xQueue2,&queue2_receive,portMAX_DELAY);//接收
+
+	  printf("receive_ret=%ld \r\n",ret);
+
+	  printf("receive=%d \r\n",queue2_receive);
+		if(BUFFER1_READY==queue2_receive)
+		{
+			printf("output buffer1 data=%d",buffer1[0]);
+		}
+		else
+			printf("output  buffer2 data=%d",buffer2[0]);
+
+  }
+}
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
 
-__weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)//这里是创建DMA回调函数进行中断打印
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hadc);
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_ADC_ConvCpltCallback could be implemented in the user file
    */
-		printf("buffer1 data =%d\r\n",buffer1[0]);
-	
 	BaseType_t xHigherPriorityTaskWoken;
 	xHigherPriorityTaskWoken = pdFALSE;
 	
 	uint32_t dma_pattern_cplt=DMA_CPLT_INT;
 	
-	BaseType_t ret_1=pdPASS;
-	
-	ret_1= xQueueSendFromISR( xQueue1, &dma_pattern_cplt,&xHigherPriorityTaskWoken );
-		if( xHigherPriorityTaskWoken )
-	{
-		// Actual macro used here is port specific.
-		taskYIELD ();
-	}
-	printf("send_ret_1=%ld \r\n",ret_1);
+	xQueueSendFromISR(xQueue1, &dma_pattern_cplt, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	
 }
-__weak void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
+void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(hadc);

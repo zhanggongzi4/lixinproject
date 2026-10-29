@@ -18,10 +18,19 @@
 | [stage-03-queue-test](https://github.com/zhanggongzi4/lixinproject/tree/stage-03-queue-test) | 新增 FreeRTOS 队列创建、发送和接收测试：在同一个任务中发送数值 `123`，再接收并打印返回值及数据。 |
 | [stage-04-queue-from-isr](https://github.com/zhanggongzi4/lixinproject/tree/stage-04-queue-from-isr) | 在中断中发送队列：ADC DMA 完成回调通过 `xQueueSendFromISR()` 发送完成标记 `0xA1`，任务尝试接收。 |
 | [stage-05-two-buffer-loop](https://github.com/zhanggongzi4/lixinproject/tree/stage-05-two-buffer-loop) | buffer1 和 buffer2 循环写入：任务循环阻塞接收 DMA 完成消息，通过 `DMA_point` 切换下一次 DMA 写入的 buffer。保存当前学习代码，具体边界见下方说明。 |
+| [stage-06-buffer-notify-output](https://github.com/zhanggongzi4/lixinproject/tree/stage-06-buffer-notify-output) | 切换 buffer1、buffer2；新增输出线程和第二个队列，采集任务发送 buffer 就绪消息，输出线程打印对应 buffer 的值。补齐 Keil 工程的 ADC/DMA 源文件。 |
 
 本次直接从初始化阶段保存到 DMA 传输及中断阶段，未单独保存仅完成 buffer 申请的版本，因此没有 `stage-01-buffer` 标签。
 
-## 当前代码状态
+## 当前代码状态（stage-06）
+
+- `MX_FREERTOS_Init()` 先创建输出队列，再创建默认任务和 `ADCTask()`，避免输出任务先运行时访问空队列。
+- 默认任务先申请两个 buffer，再启动 ADC DMA。DMA 完成回调通过 `xQueueSendFromISR()` 通知默认任务；默认任务切换下一次 DMA 的目标，并通过第二个队列通知输出任务。
+- `ADCTask()` 根据收到的 `BUFFER1_READY` 或 `BUFFER2_READY` 消息打印相应 buffer 的值。DMA 在 Normal 模式下每次完成后由任务重新启动。
+- Keil 工程已加入 `adc.c`、`dma.c`、`stm32f4xx_hal_adc.c` 和 `stm32f4xx_hal_adc_ex.c`。本阶段使用 Keil ARMCC 5 构建通过：0 个错误、0 个警告。
+- 输出队列目前只保存 buffer 编号，不保存采样值；若输出任务处理不及时、buffer 已被下一次 DMA 覆盖，打印值可能不是该消息产生时的采样值。尚未进行开发板运行验证。
+
+## 上一阶段代码状态（stage-05）
 
 - `StartDefaultTask()` 在启动 DMA 前使用 `xQueueCreate(10, 4)` 创建全局队列，容量为 10、每项 4 字节。
 - DMA 完成回调通过 `xQueueSendFromISR()` 发送 `DMA_CPLT_INT`（`0xA1`）；若唤醒更高优先级任务，当前代码通过 `taskYIELD()` 请求 PendSV，在中断退出后进行任务切换。
