@@ -738,6 +738,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp_uart_driver.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\USART\bsp_uart_driver.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_uart_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\USART\bsp_uart_driver.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>

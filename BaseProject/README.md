@@ -1,17 +1,24 @@
-# UART DMA 架构学习：创建队列阶段
+# UART DMA 架构学习：创建 BSP 层 UART 任务阶段
 
 - 仓库：<https://github.com/zhanggongzi4/lixinproject>
 - 分支：`uart_dma_arch_ope`
-- 阶段标签：`uart-dma-stage-01-queue-create`
-- 阶段日期：2026-10-29
+- 阶段标签：`uart-dma-stage-02-bsp-uart-task`
+- 阶段日期：2026-10-30
 - Keil 工程：`MDK-ARM/BaseProject.uvprojx`
 - 任务源码：`APP/Uart_Parse/uart_parse_task.c`
 
 ## 本阶段内容
 
-FreeRTOS 创建 `Task_uart_rec_A` 任务，入口为 `uart_rec_A_func()`。任务调用 `xQueueCreate(1, 4)`，申请一个容量为 1、每项 4 字节的队列，并通过日志观察创建结果，随后循环调用 `osDelay(1)`。
+新增 `BSP/USART/bsp_uart_driver.c` 和 `bsp_uart_driver.h`，在 `MX_FREERTOS_Init()` 中通过 `osThreadNew()` 创建 BSP 层 UART 任务，入口为 `uart_driver_fuc()`，优先级为 Normal，栈大小为 512 字节。Keil 工程已加入 BSP 文件，头文件名称和工程路径保持一致。
 
-本次保存当前学习源码；阶段内容为创建队列，尚未实现队列发送、接收或 UART DMA 接收流程。
+UART 接收完成回调仍保留在 `Core/Src/usart.c`，使用 `xQueueSendFromISR()` 发送测试值 `0x12`；`uart_rec_A_func()` 创建队列并尝试接收、打印数据。当前 BSP 任务入口为空函数，尚未实现 UART DMA 接收和 buffer 切换；空任务直接返回存在运行风险，后续需补充任务循环或显式删除任务。
+
+## 阶段记录
+
+| 标签 | 阶段 |
+| --- | --- |
+| `uart-dma-stage-01-queue-create` | 创建队列 |
+| `uart-dma-stage-02-bsp-uart-task` | 创建 BSP 层 UART 任务，加入队列收发测试代码 |
 
 ## 当前源码注意点
 
@@ -21,4 +28,4 @@ FreeRTOS 创建 `Task_uart_rec_A` 任务，入口为 `uart_rec_A_func()`。任�
 
 ## 验证
 
-HAL 头文件已改为通过 `stm32f4xx_hal.h` 引入。上传前使用 Keil ARMCC 5.06 update 5 构建：0 个错误、0 个警告，已生成目标文件。未进行开发板运行测试。
+使用 Keil ARMCC 5.06 update 5 完整重新编译：0 个错误、5 个警告，已生成目标文件。警告来自 `usart.c` 中未使用的 `ret` 变量，以及 EasyLogger 移植文件中缺少返回值和末尾换行。未进行开发板运行测试。

@@ -12,6 +12,7 @@ void uart_rec_A_func(void *argument)
 {
   /* USER CODE BEGIN uart_rec_A_func */
   /* Infinite loop */
+	uint32_t receive_data=0;
 	queue_irc_rec_A=NULL;
 	queue_irc_rec_A=xQueueCreate(1,4);
 	if(NULL==queue_irc_rec_A)
@@ -22,7 +23,10 @@ void uart_rec_A_func(void *argument)
 		log_i("queuecreate failed \r\n");
   for(;;)
   {
-    osDelay(1);
+		
+		xQueueReceive(queue_irc_rec_A,&receive_data,0xffff);
+    log_i("receive_data=[%x]",receive_data);
+		osDelay(1);
   }
   /* USER CODE END uart_rec_A_func */
 }

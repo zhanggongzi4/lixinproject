@@ -19,13 +19,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-
+#include "freertos.h"
+#include "queue.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
-
+extern QueueSetHandle_t queue_irc_rec_A;
 /* USART1 init function */
 
 void MX_USART1_UART_Init(void)
@@ -122,6 +123,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* NOTE: This function should not be modified, when the callback is needed,
            the HAL_UART_RxCpltCallback could be implemented in the user file
    */
-
+  log_d("HAL_UART_RxCpltCallback");
+	
+	uint32_t send_data_to_rec_A=0X12;
+	BaseType_t ret = pdPASS;
+	
+	 ret=xQueueSendFromISR(queue_irc_rec_A, &send_data_to_rec_A,NULL );
 }
 /* USER CODE END 1 */

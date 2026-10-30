@@ -61,6 +61,12 @@ const osThreadAttr_t Task_uart_rec_A_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+osThreadId_t Task_bsp_uart_driverHandle;
+const osThreadAttr_t Task_bsp_uart_driver_attributes = {
+  .name ="Task_bsp_uart_driver ",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -69,7 +75,7 @@ const osThreadAttr_t Task_uart_rec_A_attributes = {
 
 void StartDefaultTask(void *argument);
 void uart_rec_A_func(void *argument);
-
+extern void uart_driver_fuc(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -104,7 +110,7 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of Task_uart_rec_A */
   Task_uart_rec_AHandle = osThreadNew(uart_rec_A_func, NULL, &Task_uart_rec_A_attributes);
-
+  Task_bsp_uart_driverHandle = osThreadNew(uart_driver_fuc, NULL, &Task_bsp_uart_driver_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
