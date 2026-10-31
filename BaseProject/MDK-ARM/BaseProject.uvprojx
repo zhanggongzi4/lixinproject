@@ -753,6 +753,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>MID_circular_buffer</GroupName>
+          <Files>
+            <File>
+              <FileName>mid_circular_buffer .h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Middlewares\MID_circular_buffer\mid_circular_buffer .h</FilePath>
+            </File>
+            <File>
+              <FileName>mid_circular_buffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\MID_circular_buffer\mid_circular_buffer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
