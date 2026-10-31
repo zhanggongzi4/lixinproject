@@ -116,18 +116,18 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_RxCpltCallback could be implemented in the user file
-   */
-  log_d("HAL_UART_RxCpltCallback");
-	
-	uint32_t send_data_to_rec_A=0X12;
-	BaseType_t ret = pdPASS;
-	
-	 ret=xQueueSendFromISR(queue_irc_rec_A, &send_data_to_rec_A,NULL );
-}
-/* USER CODE END 1 */
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//  /* Prevent unused argument(s) compilation warning */
+//  
+//  /* NOTE: This function should not be modified, when the callback is needed,
+//           the HAL_UART_RxCpltCallback could be implemented in the user file
+//   */
+//  log_d("HAL_UART_RxCpltCallback");
+//	
+//	uint32_t send_data_to_rec_A=0X12;
+//	BaseType_t ret = pdPASS;
+//	
+//	 ret=xQueueSendFromISR(queue_irc_rec_A, &send_data_to_rec_A,NULL );
+//}
+///* USER CODE END 1 */
