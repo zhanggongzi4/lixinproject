@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+typedef uint8_t data_type_t;
+
 #define CIRCULAR_BUFFER_SIZE 100
 
 typedef struct {
@@ -17,6 +19,6 @@ uint8_t    buffer_is_empty  (circular_buffer_t* p_buffer);
 uint8_t    buffer_is_full   (circular_buffer_t* p_buffer);
 uint8_t    insert_data      (circular_buffer_t* p_buffer,\
 																		    data_type_t data);
-uint8_t    insert_data      (circular_buffer_t* p_buffer,\
+uint8_t    get_data        (circular_buffer_t* p_buffer,\
 																		    data_type_t *data);
 #endif

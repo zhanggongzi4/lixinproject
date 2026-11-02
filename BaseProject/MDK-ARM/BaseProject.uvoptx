@@ -820,8 +820,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Middlewares\MID_circular_buffer\mid_circular_buffer .h</PathWithFileName>
-      <FilenameWithoutPath>mid_circular_buffer .h</FilenameWithoutPath>
+      <PathWithFileName>..\Middlewares\MID_circular_buffer\mid_circular_buffer.h</PathWithFileName>
+      <FilenameWithoutPath>mid_circular_buffer.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

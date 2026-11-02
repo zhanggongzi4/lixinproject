@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F411xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../RTT;../easylogger/inc</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../RTT;../easylogger/inc;../Middlewares/MID_circular_buffer</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -354,7 +354,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\Core\Inc;../Core/Inc</IncludePath>
+              <IncludePath>..\Core\Inc;../Core/Inc;..\Middlewares</IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -756,9 +756,9 @@
           <GroupName>MID_circular_buffer</GroupName>
           <Files>
             <File>
-              <FileName>mid_circular_buffer .h</FileName>
+              <FileName>mid_circular_buffer.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Middlewares\MID_circular_buffer\mid_circular_buffer .h</FilePath>
+              <FilePath>..\Middlewares\MID_circular_buffer\mid_circular_buffer.h</FilePath>
             </File>
             <File>
               <FileName>mid_circular_buffer.c</FileName>
